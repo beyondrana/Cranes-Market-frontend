@@ -4,8 +4,10 @@ import Header from './components/Header'
 import Layout from './Layout/Layout'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import ProductUploadForm from './components/ProductUploadForm'
 
 const App = () => {
+  
   return (
     <Layout>
 
@@ -13,6 +15,7 @@ const App = () => {
       <Route path='/' element={<Header/>}/>
       <Route path='/login' element={<Login/>}/>
       <Route path='/signup' element={<Signup/>}/>
+      <Route path='/add-product' element={<ProductUploadForm/>}/>
     </Routes>
     
     </Layout>
