@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { apiError } from "../../../Backend/src/Utils/apiError";
+import useGlobalUserObject from "../store/store";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const setLogin=useGlobalUserObject((state)=>state.setLogin);
+  const loadUserFromStorage=useGlobalUserObject((state)=>state.loadUserFromStorage)
+  const navigate=useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -17,11 +22,19 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/v1/login", form, {
+      const response = await axios.post("http://localhost:5000/api/v1/login", form, {
         withCredentials: true,
       });
+      if(!response) throw apiError("Log in failed")
       alert("Login Successful!");
-      console.log(res.data);
+
+      // console.log(response.data.user);
+      
+      
+      setLogin(response.data);
+      loadUserFromStorage();
+      navigate('/')
+
     } catch (err) {
       setError(err?.response?.data?.message || "Login Failed");
     } finally {

@@ -1,12 +1,11 @@
-import React, { useState,useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 
 const ProductUploadForm = () => {
-    const currentUser={
-        _id:"123",
-      }
-    //   instead of dummy data get current user from data base else it will give error as schema is asking for an BSON object
-    // also one thing missing here is that after uploading of product we need to  add product id to user database
+  const currentUser = {
+    _id: "123",
+  };
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -24,46 +23,31 @@ const ProductUploadForm = () => {
   const [success, setSuccess] = useState(false);
   const fileInputRef = useRef(null);
 
-//   const handleFileChange = (e) => {
-//     if (e.target.files.length > 4) {
-//       setError('Maximum 4 images allowed');
-//       return;
-//     }
-//     setFiles(Array.from(e.target.files));
-//     setError('');
-//   };
-
-const handleFileChange = (e) => {
+  const handleFileChange = (e) => {
     const newFiles = Array.from(e.target.files);
     
-    // Check if adding these files would exceed the 4-image limit
     if (files.length + newFiles.length > 4) {
       setError('You can upload maximum 4 images');
       return;
     }
     
-    // Filter out duplicates by name
     const uniqueNewFiles = newFiles.filter(
       newFile => !files.some(existingFile => existingFile.name === newFile.name)
     );
     
     setFiles(prevFiles => [...prevFiles, ...uniqueNewFiles]);
     setError('');
-    e.target.value = ''; // Reset file input
+    e.target.value = '';
   };
-//   const handleRemoveImage = (index) => {
-//     const newFiles = [...files];
-//     newFiles.splice(index, 1);
-//     setFiles(newFiles);
-//   };
 
-const handleAddMoreImages = () => {
+  const handleAddMoreImages = () => {
     fileInputRef.current.click();
   };
 
   const handleRemoveImage = (index) => {
     setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
   };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -87,12 +71,10 @@ const handleAddMoreImages = () => {
       
       const formDataToSend = new FormData();
       
-      // Append product data
       Object.entries(formData).forEach(([key, value]) => {
         formDataToSend.append(key, value);
       });
       
-      // Append images
       files.forEach(file => {
         formDataToSend.append('images', file);
       });
@@ -104,7 +86,6 @@ const handleAddMoreImages = () => {
       });
       
       setSuccess(true);
-      // Reset form
       setFormData({
         title: '',
         description: '',
@@ -124,54 +105,49 @@ const handleAddMoreImages = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Sell Your Item</h2>
-      
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      {success && <p className="text-green-500 mb-4">Product uploaded successfully!</p>}
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Upload Images (Max 4)</label>
-          <input 
-            type="file" 
-            multiple
-            accept="image/*"
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-md file:border-0
-              file:text-sm file:font-semibold
-              file:bg-blue-50 file:text-blue-700
-              hover:file:bg-blue-100"
-          />
-          {files.length > 0 && (
-            <div className="flex flex-wrap gap-4 mt-3">
-              {files.map((file, index) => (
-                <div key={index} className="relative">
-                  <img 
-                    src={URL.createObjectURL(file)} 
-                    alt={file.name} 
-                    className="w-20 h-20 object-cover rounded"
-                  />
-                  <button 
-                    type="button" 
-                    onClick={() => handleRemoveImage(index)}
-                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+    <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 py-6 px-8">
+        <h2 className="text-3xl font-bold text-white">List Your Item For Sale</h2>
+        <p className="text-blue-100 mt-2">Fill in the details below to post your ad</p>
+      </div>
+
+      {/* Notification area */}
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 m-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
             </div>
-          )}
-        </div> */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Images ({files.length}/4)
-          </label>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {success && (
+        <div className="bg-green-50 border-l-4 border-green-500 p-4 m-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-green-700">Product uploaded successfully!</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        {/* Image upload section */}
+        <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Product Images</h3>
           
-          {/* Hidden file input */}
           <input 
             type="file" 
             ref={fileInputRef}
@@ -181,146 +157,200 @@ const handleAddMoreImages = () => {
             className="hidden"
           />
           
-          {/* Display selected images */}
-          <div className="flex flex-wrap gap-4 mt-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Display selected images */}
             {files.map((file, index) => (
-              <div key={index} className="relative">
+              <div key={index} className="relative group rounded-lg overflow-hidden shadow-sm">
                 <img 
                   src={URL.createObjectURL(file)} 
                   alt={file.name} 
-                  className="w-20 h-20 object-cover rounded"
+                  className="w-full h-32 object-cover"
                 />
-                <button 
-                  type="button" 
-                  onClick={() => handleRemoveImage(index)}
-                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                >
-                  ×
-                </button>
+                <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <button 
+                    type="button" 
+                    onClick={() => handleRemoveImage(index)}
+                    className="bg-red-600 text-white p-1 rounded-full"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+                <span className="absolute bottom-1 right-2 text-xs font-medium bg-gray-900 bg-opacity-70 text-white px-2 py-1 rounded">
+                  {index + 1}/4
+                </span>
               </div>
             ))}
             
-            {/* Add more button (only shows if we have less than 4 images) */}
+            {/* Add more button */}
             {files.length < 4 && (
               <button
                 type="button"
                 onClick={handleAddMoreImages}
-                className="w-20 h-20 border-2 border-dashed border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-blue-500 hover:text-blue-500"
+                className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-32 bg-white hover:bg-blue-50 hover:border-blue-500 transition-colors duration-200"
               >
-                <span>+ Add</span>
+                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <span className="mt-2 text-sm text-gray-500">Add Image</span>
               </button>
             )}
           </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
+          <p className="mt-3 text-xs text-gray-500">Upload up to 4 images. First image will be used as the cover.</p>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            required
-            min="0"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
+        {/* Item details section */}
+        <div className="border border-gray-200 rounded-lg p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Item Details</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Title <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                placeholder="e.g. iPhone 13 Pro 128GB"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Price <span className="text-red-500">*</span></label>
+              <div className="relative rounded-lg shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-500 sm:text-sm">$</span>
+                </div>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  required
+                  min="0"
+                  placeholder="0.00"
+                  className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows="4"
+                placeholder="Describe your item's condition, features, and why you're selling it..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category <span className="text-red-500">*</span></label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Select category</option>
+                <option value="electronics">Electronics</option>
+                <option value="furniture">Furniture</option>
+                <option value="clothing">Clothing</option>
+                <option value="books">Books</option>
+                <option value="vehicles">Vehicles</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="e.g. San Francisco, CA"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+              <div className="flex gap-4">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="condition"
+                    value="new"
+                    checked={formData.condition === "new"}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">New</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="condition"
+                    value="used"
+                    checked={formData.condition === "used"}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Used</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center h-10">
+                <input
+                  type="checkbox"
+                  name="negotiable"
+                  checked={formData.negotiable}
+                  onChange={handleChange}
+                  className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label className="ml-2 block text-sm text-gray-700">Price is negotiable</label>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            rows="4"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        {/* Submit button */}
+        <div className="flex justify-end pt-4">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="px-8 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
-            <option value="">Select category</option>
-            <option value="electronics">Electronics</option>
-            <option value="furniture">Furniture</option>
-            <option value="clothing">Clothing</option>
-            <option value="books">Books</option>
-            <option value="vehicles">Vehicles</option>
-            <option value="other">Other</option>
-          </select>
+            {isLoading ? (
+              <div className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Uploading...
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
+                </svg>
+                Post Ad
+              </div>
+            )}
+          </button>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-          <input
-            type="text"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
-          <select
-            name="condition"
-            value={formData.condition}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="new">New</option>
-            <option value="used">Used</option>
-          </select>
-        </div>
-
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            name="negotiable"
-            checked={formData.negotiable}
-            onChange={handleChange}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label className="ml-2 block text-sm text-gray-700">Price is negotiable</label>
-        </div>
-
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? (
-            <>
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Uploading...
-            </>
-          ) : 'Post Ad'}
-        </button>
       </form>
     </div>
-    
-);
+  );
 };
 
 export default ProductUploadForm;

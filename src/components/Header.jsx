@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Button from './Button'
+import useGlobalUserObject from '../store/store';
 
 const Header = () => {
+  
   return (
     <div>
         <Link to={'/login'}><Button>Log In</Button></Link>

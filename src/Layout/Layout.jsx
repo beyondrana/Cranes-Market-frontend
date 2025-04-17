@@ -1,40 +1,71 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import useGlobalUserObject from "../store/store";
 
 const Layout = ({ children }) => {
   const location = useLocation();
+  const loadUserFromStorage = useGlobalUserObject((state) => state.loadUserFromStorage);
+  // const user=useGlobalUserObject((state)=>state.user)
+  const setLogout=useGlobalUserObject((state)=>state.setLogout)
+  // const [isLoggedIn,setLoggedIn]=useState(false);
+
+  const user = useGlobalUserObject((state) => state.user);
+  const isLoggedIn = !!user;
+
+  
+  const handleLogout=()=>{
+    setOpen(false);//for mobile devices
+    setLogout();
+    alert("Logout")
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <nav className="bg-gradient-to-r from-gray-900 to-black text-white py-5 px-6 shadow-lg">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="text-3xl font-extrabold tracking-tight">
-              <Link to="/" className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all duration-300">
-                MyApp
+            <span className="text-3xl font-extrabold tracking-tight hover:scale-125 duration-100">
+              <Link to="/" className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700  transition-all duration-300">
+                CU - <span className="text-white ">Market</span>
               </Link>
             </span>
           </div>
           <div className="hidden md:flex items-center space-x-8">
-            <Link
+            {!isLoggedIn ?<Link
               to="/login"
               className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
                 location.pathname === "/login" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
               }`}
             >
               Login
-            </Link>
-            <Link
+            </Link> : <Link
+              to="/add-product"
+              className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
+                location.pathname === "/login" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
+              }`}
+            >
+              Add Product
+            </Link>}
+
+            {!isLoggedIn ? <Link
               to="/signup"
               className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
                 location.pathname === "/signup" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
               }`}
             >
               Sign Up
-            </Link>
+            </Link> : <Link
+              onClick={handleLogout}
+              to="/login"
+              className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
+                location.pathname === "/signup" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
+              }`}
+            >
+              Logout
+            </Link>}
           </div>
           <div className="md:hidden">
-            <MobileMenu />
+            <MobileMenu handleLogout={handleLogout} isLoggedIn={isLoggedIn} />
           </div>
         </div>
       </nav>
@@ -45,14 +76,14 @@ const Layout = ({ children }) => {
       
       <footer className="bg-gray-900 text-gray-400 py-6 text-center text-sm">
         <div className="max-w-7xl mx-auto px-4">
-          © {new Date().getFullYear()} MyApp. All rights reserved.
+          © {new Date().getFullYear()} CU - Market. All rights reserved.
         </div>
       </footer>
     </div>
   );
 };
 
-const MobileMenu = () => {
+const MobileMenu = ({handleLogout,isLoggedIn}) => {
   const [open, setOpen] = React.useState(false);
   const location = useLocation();
 
@@ -89,7 +120,7 @@ const MobileMenu = () => {
 
       {open && (
         <div className="absolute right-0 mt-3 w-48 rounded-md shadow-lg py-2 bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
-          <Link
+          {!isLoggedIn ?<Link
             to="/login"
             className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
               location.pathname === "/login" 
@@ -99,8 +130,18 @@ const MobileMenu = () => {
             onClick={() => setOpen(false)}
           >
             Login
-          </Link>
-          <Link
+          </Link>: <Link
+            to="/add-product"
+            className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
+              location.pathname === "/login" 
+              ? "bg-gray-700 text-red-500" 
+              : "text-gray-100 hover:bg-gray-700"
+            }`}
+            onClick={() => setOpen(false)}
+          >
+            Add Product
+          </Link>}
+          {!isLoggedIn ? <Link
             to="/signup"
             className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
               location.pathname === "/signup" 
@@ -110,7 +151,17 @@ const MobileMenu = () => {
             onClick={() => setOpen(false)}
           >
             Sign Up
-          </Link>
+          </Link>: <Link
+            to="/login"
+            className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
+              location.pathname === "/signup" 
+              ? "bg-gray-700 text-red-500" 
+              : "text-gray-100 hover:bg-gray-700"
+            }`}
+            onClick={handleLogout}
+          >
+            Log out
+          </Link>}
         </div>
       )}
     </div>
