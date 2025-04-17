@@ -1,11 +1,120 @@
-import React from 'react'
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
 
-const Layout = ({children}) => {
+const Layout = ({ children }) => {
+  const location = useLocation();
+
   return (
-    <div className=''>
-        {children}
-    </div>
-  )
-}
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <nav className="bg-gradient-to-r from-gray-900 to-black text-white py-5 px-6 shadow-lg">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="text-3xl font-extrabold tracking-tight">
+              <Link to="/" className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all duration-300">
+                MyApp
+              </Link>
+            </span>
+          </div>
+          <div className="hidden md:flex items-center space-x-8">
+            <Link
+              to="/login"
+              className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
+                location.pathname === "/login" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
+              }`}
+            >
+              Login
+            </Link>
+            <Link
+              to="/signup"
+              className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
+                location.pathname === "/signup" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
+              }`}
+            >
+              Sign Up
+            </Link>
+          </div>
+          <div className="md:hidden">
+            <MobileMenu />
+          </div>
+        </div>
+      </nav>
 
-export default Layout
+      <main className="flex-grow py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        {children}
+      </main>
+      
+      <footer className="bg-gray-900 text-gray-400 py-6 text-center text-sm">
+        <div className="max-w-7xl mx-auto px-4">
+          © {new Date().getFullYear()} MyApp. All rights reserved.
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+const MobileMenu = () => {
+  const [open, setOpen] = React.useState(false);
+  const location = useLocation();
+
+  return (
+    <div className="relative">
+      <button
+        className="text-white focus:outline-none"
+        onClick={() => setOpen(!open)}
+        aria-label="Toggle menu"
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          {open ? (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          ) : (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          )}
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-3 w-48 rounded-md shadow-lg py-2 bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
+          <Link
+            to="/login"
+            className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
+              location.pathname === "/login" 
+              ? "bg-gray-700 text-red-500" 
+              : "text-gray-100 hover:bg-gray-700"
+            }`}
+            onClick={() => setOpen(false)}
+          >
+            Login
+          </Link>
+          <Link
+            to="/signup"
+            className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
+              location.pathname === "/signup" 
+              ? "bg-gray-700 text-red-500" 
+              : "text-gray-100 hover:bg-gray-700"
+            }`}
+            onClick={() => setOpen(false)}
+          >
+            Sign Up
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Layout;
