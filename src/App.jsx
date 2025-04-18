@@ -1,10 +1,10 @@
 import React from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import Header from './components/Header'
 import Layout from './Layout/Layout'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import ProductUploadForm from './components/ProductUploadForm'
+import Homepage from './pages/Homepage'
 
 const App = () => {
   
@@ -12,7 +12,7 @@ const App = () => {
     <Layout>
 
     <Routes>
-      <Route path='/' element={<Header/>}/>
+      <Route path='/' element={<Homepage/>}/>
       <Route path='/login' element={<Login/>}/>
       <Route path='/signup' element={<Signup/>}/>
       <Route path='/add-product' element={<ProductUploadForm/>}/>

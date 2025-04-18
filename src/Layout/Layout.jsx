@@ -1,22 +1,65 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import useGlobalUserObject from "../store/store";
+import axios from "axios";
+
+// automatic logout after token expiration:
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const loadUserFromStorage = useGlobalUserObject((state) => state.loadUserFromStorage);
-  // const user=useGlobalUserObject((state)=>state.user)
   const setLogout=useGlobalUserObject((state)=>state.setLogout)
-  // const [isLoggedIn,setLoggedIn]=useState(false);
 
   const user = useGlobalUserObject((state) => state.user);
+  const loadUserFromStorage=useGlobalUserObject((state)=>state.loadUserFromStorage);
   const isLoggedIn = !!user;
+  const navigate=useNavigate();
 
   
   const handleLogout=()=>{
-    setOpen(false);//for mobile devices
+    // setOpen(false);//for mobile devices
     setLogout();
-    alert("Logout")
+    alert("Logout Successful")
+  }
+
+  useEffect(() => {
+    // getCurrentUser();
+    loadUserFromStorage();
+  }, []);
+  
+  const getCurrentUser=async ()=>{
+    
+    // setLoadingForUser(true);
+    try {  
+      const res = await axios.get(
+        `http://localhost:5000/api/v1/get-user`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      if(!res){
+        throw new error("User Fetching Failed");
+      }
+      
+      const data= await res?.data;
+      console.log(data);
+
+      // setUser(data);
+      // localStorage.setItem("currUser",JSON.stringify(data));
+      loadUserFromStorage();
+      
+      
+    } catch (error) {
+      console.error(error);
+      // alert("Token Expired Or Invalid User Re login.");
+      handleLogout();
+    }
+    finally{
+      // setLoadingForUser(false);
+    }
   }
 
   return (
@@ -41,7 +84,7 @@ const Layout = ({ children }) => {
             </Link> : <Link
               to="/add-product"
               className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
-                location.pathname === "/login" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
+                location.pathname === "/add-product" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
               }`}
             >
               Add Product
@@ -58,7 +101,7 @@ const Layout = ({ children }) => {
               onClick={handleLogout}
               to="/login"
               className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
-                location.pathname === "/signup" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
+                location.pathname === "/logout" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
               }`}
             >
               Logout

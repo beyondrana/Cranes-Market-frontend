@@ -1,10 +1,53 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import useGlobalUserObject from '../store/store';
 
 const ProductUploadForm = () => {
-  const currentUser = {
-    _id: "123",
-  };
+  const [currentUser,setCurrentUser]=useState(null);
+  useEffect(() => {
+    getCurrentUser();
+    
+  }, []);
+
+  useEffect(()=>{
+    if (currentUser?._id) {
+      setFormData(prev => ({
+        ...prev,
+        user: currentUser._id
+      }));
+    }
+    // console.log(currentUser?._id);
+  },[currentUser])
+  
+  const getCurrentUser=async ()=>{
+    try {  
+      const res = await axios.get(
+        `http://localhost:5000/api/v1/get-user`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      if(!res){
+        throw new error("User Fetching Failed");
+      }
+      
+      const data= await res?.data;
+      setCurrentUser(data?.user);
+      
+      
+      
+    } catch (error) {
+      console.error(error);
+      handleLogout();
+    }
+    finally{
+    }
+  }
+
 
   const [formData, setFormData] = useState({
     title: '',
@@ -81,6 +124,7 @@ const ProductUploadForm = () => {
       
       await axios.post('http://localhost:5000/api/v1/add-product', formDataToSend, {
         headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
           'Content-Type': 'multipart/form-data'
         }
       });
@@ -222,7 +266,7 @@ const ProductUploadForm = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Price <span className="text-red-500">*</span></label>
               <div className="relative rounded-lg shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="text-gray-500 sm:text-sm">$</span>
+                  <span className="text-gray-500 sm:text-sm">₹</span>
                 </div>
                 <input
                   type="number"
