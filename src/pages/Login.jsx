@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import { apiError } from "../../../Backend/src/Utils/apiError";
 import useGlobalUserObject from "../store/store";
 import API_URL from "../constants";
 
@@ -26,7 +25,7 @@ const Login = () => {
       const response = await axios.post(`${API_URL}/api/v1/login`, form, {
         withCredentials: true,
       });
-      if(!response) throw apiError("Log in failed")
+      if(!response) throw new Error("Log in failed")
       alert("Login Successful!");
 
       // console.log(response.data.user);
