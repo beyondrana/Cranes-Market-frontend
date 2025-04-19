@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import useGlobalUserObject from "../store/store";
 import axios from "axios";
+import API_URL from "../constants";
 
 // automatic logout after token expiration:
 
@@ -31,7 +32,7 @@ const Layout = ({ children }) => {
     // setLoadingForUser(true);
     try {  
       const res = await axios.get(
-        `http://localhost:5000/api/v1/get-user`,
+        `${API_URL}/api/v1/get-user`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -74,7 +75,8 @@ const Layout = ({ children }) => {
             </span>
           </div>
           <div className="hidden md:flex items-center space-x-8">
-            {!isLoggedIn ?<Link
+            {!isLoggedIn ?
+            <Link
               to="/login"
               className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
                 location.pathname === "/login" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
@@ -89,6 +91,7 @@ const Layout = ({ children }) => {
             >
               Add Product
             </Link>}
+
 
             {!isLoggedIn ? <Link
               to="/signup"
@@ -106,6 +109,15 @@ const Layout = ({ children }) => {
             >
               Logout
             </Link>}
+
+            <Link
+              to="/my-profile"
+              className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
+                location.pathname === "/my-profile" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
+              }`}
+            >
+              My Profile
+            </Link>
           </div>
           <div className="md:hidden">
             <MobileMenu handleLogout={handleLogout} isLoggedIn={isLoggedIn} />
@@ -205,6 +217,17 @@ const MobileMenu = ({handleLogout,isLoggedIn}) => {
           >
             Log out
           </Link>}
+          <Link
+            to="/my-profile"
+            className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
+              location.pathname === "/my-profile" 
+              ? "bg-gray-700 text-red-500" 
+              : "text-gray-100 hover:bg-gray-700"
+            }`}
+          >
+            My Profile
+          </Link>
+          
         </div>
       )}
     </div>

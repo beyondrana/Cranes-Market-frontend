@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import API_URL from "../constants";
 
 const Signup = () => {
   const [form, setForm] = useState({
@@ -23,7 +24,7 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/v1/signup", form);
+      const res = await axios.post(`${API_URL}/api/v1/signup`, form);
       alert("Signup Successful!");
       console.log(res.data);
     } catch (err) {

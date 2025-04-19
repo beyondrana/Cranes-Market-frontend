@@ -1,9 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+// import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import axios from 'axios';
 import SearchBar from '../components/SearchBar';
 import FilterPanel from '../components/FilterPanel';
 import ProductList from '../components/ProductList';
 import ProductModal from '../components/ProductModal';
+import API_URL from '../constants';
 
 const Homepage = () => {
   const [products, setProducts] = useState([]);
@@ -35,7 +37,7 @@ const Homepage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('http://localhost:5000/api/v1/get-products');
+        const res = await axios.get(`${API_URL}/api/v1/get-products`);
         setProducts(res.data);
         setFilteredProducts(res.data);
         
@@ -97,7 +99,84 @@ const Homepage = () => {
     };
   }, [showModal]);
 
-  const setupSlideshow = (productId, imageCount) => {
+  // fetching user details when a product is clicked and add it to product.userDetails
+  const fetchUserDetails = async (userId) => {
+    try {
+      const response = await axios.get(`${API_URL}/api/v1/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      return null;
+    }
+  };
+  // const handleProductClick = (product) => {
+  //   setSelectedProduct(product);
+  //   setShowModal(true);
+  // };
+  const handleProductClick = async (product) => {
+    setSelectedProduct(product);
+    
+    // Fetch user details if not already loaded
+    if (product.user && typeof product.user === 'string') {
+      const userDetails = await fetchUserDetails(product.user);
+      if (userDetails) {
+        // Create a new object with user details included
+        setSelectedProduct(prevProduct => ({
+          ...prevProduct,
+          userDetails: userDetails
+        }));
+      }
+    }
+    
+    setShowModal(true);
+  };
+
+
+  // const setupSlideshow = (productId, imageCount) => {
+  //   const nextSlide = () => {
+  //     setCurrentSlides(prev => {
+  //       const nextIndex = ((prev[productId] || 0) + 1) % imageCount;
+  //       return { ...prev, [productId]: nextIndex };
+  //     });
+      
+  //     // Schedule next slide
+  //     timersRef.current[productId] = setTimeout(() => {
+  //       nextSlide();
+  //     }, 3000);
+  //   };
+    
+  //   // Start the slideshow loop
+  //   timersRef.current[productId] = setTimeout(nextSlide, 3000);
+  // };
+
+  // const handleSlideChange = (productId, slideIndex) => {
+  //   // Clear existing timer for this product
+  //   if (timersRef.current[productId]) {
+  //     clearTimeout(timersRef.current[productId]);
+  //   }
+    
+  //   // Set current slide directly
+  //   setCurrentSlides(prev => ({
+  //     ...prev, 
+  //     [productId]: slideIndex
+  //   }));
+    
+  //   // Get the image count for this product
+  //   const product = filteredProducts.find(p => p._id === productId);
+  //   const imageCount = product?.images?.length || 0;
+    
+  //   // Reset the timer for this product
+  //   timersRef.current[productId] = setTimeout(() => {
+  //     setCurrentSlides(prev => ({
+  //       ...prev,
+  //       [productId]: (slideIndex + 1) % imageCount
+  //     }));
+      
+  //     // Restart the slideshow
+  //     setupSlideshow(productId, imageCount);
+  //   }, 5000); // Longer pause after manual navigation
+  // };
+  const setupSlideshow = useCallback((productId, imageCount) => {
     const nextSlide = () => {
       setCurrentSlides(prev => {
         const nextIndex = ((prev[productId] || 0) + 1) % imageCount;
@@ -112,9 +191,8 @@ const Homepage = () => {
     
     // Start the slideshow loop
     timersRef.current[productId] = setTimeout(nextSlide, 3000);
-  };
-
-  const handleSlideChange = (productId, slideIndex) => {
+  }, []);
+  const handleSlideChange = useCallback((productId, slideIndex) => {
     // Clear existing timer for this product
     if (timersRef.current[productId]) {
       clearTimeout(timersRef.current[productId]);
@@ -140,7 +218,7 @@ const Homepage = () => {
       // Restart the slideshow
       setupSlideshow(productId, imageCount);
     }, 5000); // Longer pause after manual navigation
-  };
+  }, [filteredProducts, setupSlideshow]);
 
   const applyFiltersAndSearch = () => {
     let result = [...products];
@@ -226,20 +304,26 @@ const Homepage = () => {
     setSearchTerm('');
   };
 
-  const handleProductClick = (product) => {
-    setSelectedProduct(product);
-    setShowModal(true);
-  };
+  
 
-  const closeModal = () => {
+  // const closeModal = () => {
+  //   setShowModal(false);
+  //   setSelectedProduct(null);
+  // };
+  const closeModal = useCallback(() => {
     setShowModal(false);
     setSelectedProduct(null);
-  };
+  }, []);
 
-  const handleModalSlideChange = (slideIndex) => {
+
+  // const handleModalSlideChange = (slideIndex) => {
+  //   if (!selectedProduct) return;
+  //   handleSlideChange(selectedProduct._id, slideIndex);
+  // };
+  const handleModalSlideChange = useCallback((slideIndex) => {
     if (!selectedProduct) return;
     handleSlideChange(selectedProduct._id, slideIndex);
-  };
+  }, [selectedProduct, handleSlideChange]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -274,6 +358,7 @@ const Homepage = () => {
       {/* Product Detail Modal */}
       {showModal && selectedProduct && (
         <ProductModal 
+
           product={selectedProduct}
           onClose={closeModal}
           currentSlide={currentSlides[selectedProduct._id] || 0}

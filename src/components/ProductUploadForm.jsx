@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import useGlobalUserObject from '../store/store';
+import API_URL from '../constants';
 
 const ProductUploadForm = () => {
   const [currentUser,setCurrentUser]=useState(null);
@@ -22,7 +23,7 @@ const ProductUploadForm = () => {
   const getCurrentUser=async ()=>{
     try {  
       const res = await axios.get(
-        `http://localhost:5000/api/v1/get-user`,
+        `${API_URL}/api/v1/get-user`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -122,12 +123,26 @@ const ProductUploadForm = () => {
         formDataToSend.append('images', file);
       });
       
-      await axios.post('http://localhost:5000/api/v1/add-product', formDataToSend, {
+      const product=await axios.post(`${API_URL}/api/v1/add-product`, formDataToSend, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
           'Content-Type': 'multipart/form-data'
         }
       });
+
+      const productID=product?.data?.product?._id;
+
+      if (productID && currentUser?._id) {
+        await axios.patch(`${API_URL}/api/v1/${currentUser._id}/add-product`, 
+          { productId: productID },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      }
       
       setSuccess(true);
       setFormData({

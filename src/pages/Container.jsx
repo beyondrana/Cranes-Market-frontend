@@ -27,6 +27,7 @@ import SearchBar from '../components/SearchBar';
 import FilterPanel from '../components/FilterPanel';
 import ProductList from '../components/ProductList';
 import ProductModal from '../components/ProductModal';
+import API_URL from '../constants';
 
 const Homepage = () => {
   const [products, setProducts] = useState([]);
@@ -58,7 +59,7 @@ const Homepage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('http://localhost:5000/api/v1/get-products');
+        const res = await axios.get(`${API_URL}/api/v1/get-products`);
         setProducts(res.data);
         setFilteredProducts(res.data);
         
