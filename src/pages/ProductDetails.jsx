@@ -249,7 +249,7 @@ const ProductDetails = () => {
                 )}
               </div>
               
-              <p className="text-2xl font-bold text-blue-600 mb-4">${product.price}</p>
+              <p className="text-2xl font-bold text-blue-600 mb-4">₹{product.price}</p>
               
               <div className="flex flex-wrap gap-2 mb-4">
                 <span className="bg-gray-100 text-gray-800 text-sm font-medium px-2.5 py-0.5 rounded">
