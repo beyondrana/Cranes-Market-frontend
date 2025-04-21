@@ -168,7 +168,7 @@ const MyProfile = () => {
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold text-lg text-gray-800 mb-1 truncate">{product.title}</h3>
-                    <p className="text-blue-600 font-medium">${product.price}</p>
+                    <p className="text-blue-600 font-medium">₹{product.price}</p>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-xs text-gray-500">{formatDate(product.createdAt)}</span>
                       <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded">
