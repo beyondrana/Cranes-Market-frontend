@@ -75,6 +75,14 @@ const Layout = ({ children }) => {
             </span>
           </div>
           <div className="hidden md:flex items-center space-x-8">
+          <Link
+              to="/"
+              className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
+                location.pathname === "/" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
+              }`}
+            >
+              All Products
+            </Link>
             {!isLoggedIn ?
             <Link
               to="/login"
@@ -93,14 +101,25 @@ const Layout = ({ children }) => {
             </Link>}
 
 
-            {!isLoggedIn ? <Link
+            {!isLoggedIn && <Link
               to="/signup"
               className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
                 location.pathname === "/signup" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
               }`}
             >
               Sign Up
-            </Link> : <Link
+            </Link>}
+
+            {isLoggedIn && <Link
+              to="/my-profile"
+              className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
+                location.pathname === "/my-profile" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
+              }`}
+            >
+              My Profile
+            </Link>}
+
+            {isLoggedIn && <Link
               onClick={handleLogout}
               to="/login"
               className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
@@ -109,15 +128,6 @@ const Layout = ({ children }) => {
             >
               Logout
             </Link>}
-
-            <Link
-              to="/my-profile"
-              className={`font-medium text-base transition-all duration-300 hover:text-red-400 ${
-                location.pathname === "/my-profile" ? "text-red-500 border-b-2 border-red-500 pb-1" : "text-gray-100"
-              }`}
-            >
-              My Profile
-            </Link>
           </div>
           <div className="md:hidden">
             <MobileMenu handleLogout={handleLogout} isLoggedIn={isLoggedIn} />
@@ -175,6 +185,17 @@ const MobileMenu = ({handleLogout,isLoggedIn}) => {
 
       {open && (
         <div className="absolute right-0 mt-3 w-48 rounded-md shadow-lg py-2 bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
+          <Link
+            to="/"
+            className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
+              location.pathname === "/" 
+              ? "bg-gray-700 text-red-500" 
+              : "text-gray-100 hover:bg-gray-700"
+            }`}
+            onClick={() => setOpen(false)}
+          >
+            All Products
+          </Link>
           {!isLoggedIn ?<Link
             to="/login"
             className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
@@ -188,7 +209,7 @@ const MobileMenu = ({handleLogout,isLoggedIn}) => {
           </Link>: <Link
             to="/add-product"
             className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
-              location.pathname === "/login" 
+              location.pathname === "/add-product" 
               ? "bg-gray-700 text-red-500" 
               : "text-gray-100 hover:bg-gray-700"
             }`}
@@ -196,7 +217,7 @@ const MobileMenu = ({handleLogout,isLoggedIn}) => {
           >
             Add Product
           </Link>}
-          {!isLoggedIn ? <Link
+          {!isLoggedIn && <Link
             to="/signup"
             className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
               location.pathname === "/signup" 
@@ -206,7 +227,20 @@ const MobileMenu = ({handleLogout,isLoggedIn}) => {
             onClick={() => setOpen(false)}
           >
             Sign Up
-          </Link>: <Link
+          </Link>}
+          {isLoggedIn && <Link
+            to="/my-profile"
+            className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
+              location.pathname === "/my-profile" 
+              ? "bg-gray-700 text-red-500" 
+              : "text-gray-100 hover:bg-gray-700"
+            }`}
+            onClick={() => setOpen(false)}
+          >
+            My Profile
+          </Link>}
+
+          {isLoggedIn && <Link
             to="/login"
             className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
               location.pathname === "/signup" 
@@ -217,16 +251,6 @@ const MobileMenu = ({handleLogout,isLoggedIn}) => {
           >
             Log out
           </Link>}
-          <Link
-            to="/my-profile"
-            className={`block px-4 py-3 text-sm transition duration-150 ease-in-out ${
-              location.pathname === "/my-profile" 
-              ? "bg-gray-700 text-red-500" 
-              : "text-gray-100 hover:bg-gray-700"
-            }`}
-          >
-            My Profile
-          </Link>
           
         </div>
       )}
