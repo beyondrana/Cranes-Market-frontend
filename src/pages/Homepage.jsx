@@ -1,5 +1,4 @@
-// import React, { useEffect, useState, useRef } from 'react';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import SearchBar from '../components/SearchBar';
 import FilterPanel from '../components/FilterPanel';
@@ -29,15 +28,33 @@ const Homepage = () => {
   const [currentSlides, setCurrentSlides] = useState({});
   // Store timer references for auto-slideshow
   const timersRef = useRef({});
+  // User cache to reduce API calls
+  const userCache = useRef({});
+  // Request cancellation token
+  const cancelTokenRef = useRef(null);
+  // Debounce timer for search
+  const searchTimeoutRef = useRef(null);
 
   const categories = ["furniture", "electronics", "clothing", "books", "other"];
   const conditions = ["new", "used"];
 
   useEffect(() => {
     const fetchProducts = async () => {
+      // Cancel previous request if it exists
+      if (cancelTokenRef.current) {
+        cancelTokenRef.current.cancel('Operation canceled due to new request.');
+      }
+      
+      // Create a new cancel token
+      cancelTokenRef.current = axios.CancelToken.source();
+      
       try {
         setLoading(true);
-        const res = await axios.get(`${API_URL}/api/v1/get-products`);
+        const res = await axios.get(`${API_URL}/api/v1/get-products`, {
+          cancelToken: cancelTokenRef.current.token
+        });
+        
+        // Use functional update to ensure we're working with the latest state
         setProducts(res.data);
         setFilteredProducts(res.data);
         
@@ -48,7 +65,9 @@ const Homepage = () => {
         });
         setCurrentSlides(initialSlides);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        if (!axios.isCancel(error)) {
+          console.error('Error fetching products:', error);
+        }
       } finally {
         setLoading(false);
       }
@@ -56,171 +75,20 @@ const Homepage = () => {
 
     fetchProducts();
 
-    // Clean up all timers when component unmounts
+    // Clean up all timers and cancel any pending requests when component unmounts
     return () => {
       Object.values(timersRef.current).forEach(timer => clearTimeout(timer));
+      if (cancelTokenRef.current) {
+        cancelTokenRef.current.cancel('Component unmounted');
+      }
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
     };
   }, []);
 
-  useEffect(() => {
-    // Apply filters and search whenever they change
-    applyFiltersAndSearch();
-  }, [searchTerm, filters, products]);
-
-  // Setup slideshows for products with multiple images
-  useEffect(() => {
-    // Clear all existing timers first
-    Object.values(timersRef.current).forEach(timer => clearTimeout(timer));
-    timersRef.current = {};
-    
-    // Setup auto-slideshow for each product with multiple images
-    filteredProducts.forEach(product => {
-      if (product.images && product.images.length > 1) {
-        setupSlideshow(product._id, product.images.length);
-      }
-    });
-    
-    return () => {
-      // Clean up timers when filtered products change
-      Object.values(timersRef.current).forEach(timer => clearTimeout(timer));
-    };
-  }, [filteredProducts]);
-
-  // Prevent body scrolling when modal is open
-  useEffect(() => {
-    if (showModal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-    
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, [showModal]);
-
-  // fetching user details when a product is clicked and add it to product.userDetails
-  const fetchUserDetails = async (userId) => {
-    try {
-      const response = await axios.get(`${API_URL}/api/v1/users/${userId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching user details:', error);
-      return null;
-    }
-  };
-  // const handleProductClick = (product) => {
-  //   setSelectedProduct(product);
-  //   setShowModal(true);
-  // };
-  const handleProductClick = async (product) => {
-    setSelectedProduct(product);
-    
-    // Fetch user details if not already loaded
-    if (product.user && typeof product.user === 'string') {
-      const userDetails = await fetchUserDetails(product.user);
-      if (userDetails) {
-        // Create a new object with user details included
-        setSelectedProduct(prevProduct => ({
-          ...prevProduct,
-          userDetails: userDetails
-        }));
-      }
-    }
-    
-    setShowModal(true);
-  };
-
-
-  // const setupSlideshow = (productId, imageCount) => {
-  //   const nextSlide = () => {
-  //     setCurrentSlides(prev => {
-  //       const nextIndex = ((prev[productId] || 0) + 1) % imageCount;
-  //       return { ...prev, [productId]: nextIndex };
-  //     });
-      
-  //     // Schedule next slide
-  //     timersRef.current[productId] = setTimeout(() => {
-  //       nextSlide();
-  //     }, 3000);
-  //   };
-    
-  //   // Start the slideshow loop
-  //   timersRef.current[productId] = setTimeout(nextSlide, 3000);
-  // };
-
-  // const handleSlideChange = (productId, slideIndex) => {
-  //   // Clear existing timer for this product
-  //   if (timersRef.current[productId]) {
-  //     clearTimeout(timersRef.current[productId]);
-  //   }
-    
-  //   // Set current slide directly
-  //   setCurrentSlides(prev => ({
-  //     ...prev, 
-  //     [productId]: slideIndex
-  //   }));
-    
-  //   // Get the image count for this product
-  //   const product = filteredProducts.find(p => p._id === productId);
-  //   const imageCount = product?.images?.length || 0;
-    
-  //   // Reset the timer for this product
-  //   timersRef.current[productId] = setTimeout(() => {
-  //     setCurrentSlides(prev => ({
-  //       ...prev,
-  //       [productId]: (slideIndex + 1) % imageCount
-  //     }));
-      
-  //     // Restart the slideshow
-  //     setupSlideshow(productId, imageCount);
-  //   }, 5000); // Longer pause after manual navigation
-  // };
-  const setupSlideshow = useCallback((productId, imageCount) => {
-    const nextSlide = () => {
-      setCurrentSlides(prev => {
-        const nextIndex = ((prev[productId] || 0) + 1) % imageCount;
-        return { ...prev, [productId]: nextIndex };
-      });
-      
-      // Schedule next slide
-      timersRef.current[productId] = setTimeout(() => {
-        nextSlide();
-      }, 3000);
-    };
-    
-    // Start the slideshow loop
-    timersRef.current[productId] = setTimeout(nextSlide, 3000);
-  }, []);
-  const handleSlideChange = useCallback((productId, slideIndex) => {
-    // Clear existing timer for this product
-    if (timersRef.current[productId]) {
-      clearTimeout(timersRef.current[productId]);
-    }
-    
-    // Set current slide directly
-    setCurrentSlides(prev => ({
-      ...prev, 
-      [productId]: slideIndex
-    }));
-    
-    // Get the image count for this product
-    const product = filteredProducts.find(p => p._id === productId);
-    const imageCount = product?.images?.length || 0;
-    
-    // Reset the timer for this product
-    timersRef.current[productId] = setTimeout(() => {
-      setCurrentSlides(prev => ({
-        ...prev,
-        [productId]: (slideIndex + 1) % imageCount
-      }));
-      
-      // Restart the slideshow
-      setupSlideshow(productId, imageCount);
-    }, 5000); // Longer pause after manual navigation
-  }, [filteredProducts, setupSlideshow]);
-
-  const applyFiltersAndSearch = () => {
+  // Memoized filter function to avoid unnecessary recalculations
+  const applyFiltersAndSearch = useCallback(() => {
     let result = [...products];
 
     // Apply search term
@@ -269,13 +137,151 @@ const Homepage = () => {
     }
 
     setFilteredProducts(result);
-  };
+  }, [searchTerm, filters, products]);
 
-  const handleSearchChange = (e) => {
+  // Debounced filter application
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    searchTimeoutRef.current = setTimeout(() => {
+      applyFiltersAndSearch();
+    }, 300); // 300ms debounce
+    
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm, filters, products, applyFiltersAndSearch]);
+
+  // Setup slideshows for products with multiple images - optimized with useCallback
+  const setupSlideshow = useCallback((productId, imageCount) => {
+    const nextSlide = () => {
+      setCurrentSlides(prev => {
+        const nextIndex = ((prev[productId] || 0) + 1) % imageCount;
+        return { ...prev, [productId]: nextIndex };
+      });
+      
+      // Schedule next slide
+      timersRef.current[productId] = setTimeout(() => {
+        nextSlide();
+      }, 3000);
+    };
+    
+    // Start the slideshow loop
+    timersRef.current[productId] = setTimeout(nextSlide, 3000);
+  }, []);
+
+  // Only setup slideshows for visible products
+  useEffect(() => {
+    // Clear all existing timers first
+    Object.values(timersRef.current).forEach(timer => clearTimeout(timer));
+    timersRef.current = {};
+    
+    // Only setup slideshows for visible products with multiple images
+    // This prevents unnecessary timers for filtered-out products
+    filteredProducts.forEach(product => {
+      if (product.images && product.images.length > 1) {
+        setupSlideshow(product._id, product.images.length);
+      }
+    });
+    
+    return () => {
+      // Clean up timers when filtered products change
+      Object.values(timersRef.current).forEach(timer => clearTimeout(timer));
+    };
+  }, [filteredProducts, setupSlideshow]);
+
+  // Prevent body scrolling when modal is open
+  useEffect(() => {
+    if (showModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [showModal]);
+
+  // Optimized user details fetching with caching
+  const fetchUserDetails = useCallback(async (userId) => {
+    try {
+      // Check if already in cache
+      if (userCache.current[userId]) {
+        return userCache.current[userId];
+      }
+      
+      const source = axios.CancelToken.source();
+      const response = await axios.get(`${API_URL}/api/v1/users/${userId}`, {
+        cancelToken: source.token
+      });
+      
+      // Store in cache
+      userCache.current[userId] = response.data;
+      return response.data;
+    } catch (error) {
+      if (!axios.isCancel(error)) {
+        console.error('Error fetching user details:', error);
+      }
+      return null;
+    }
+  }, []);
+
+  const handleProductClick = useCallback(async (product) => {
+    setSelectedProduct(product);
+    
+    // Fetch user details if not already loaded and if user is a string ID
+    if (product.user && typeof product.user === 'string') {
+      const userDetails = await fetchUserDetails(product.user);
+      if (userDetails) {
+        // Create a new object with user details included
+        setSelectedProduct(prevProduct => ({
+          ...prevProduct,
+          userDetails: userDetails
+        }));
+      }
+    }
+    
+    setShowModal(true);
+  }, [fetchUserDetails]);
+
+  const handleSlideChange = useCallback((productId, slideIndex) => {
+    // Clear existing timer for this product
+    if (timersRef.current[productId]) {
+      clearTimeout(timersRef.current[productId]);
+    }
+    
+    // Set current slide directly
+    setCurrentSlides(prev => ({
+      ...prev, 
+      [productId]: slideIndex
+    }));
+    
+    // Get the image count for this product
+    const product = filteredProducts.find(p => p._id === productId);
+    const imageCount = product?.images?.length || 0;
+    
+    // Reset the timer for this product
+    timersRef.current[productId] = setTimeout(() => {
+      setCurrentSlides(prev => ({
+        ...prev,
+        [productId]: (slideIndex + 1) % imageCount
+      }));
+      
+      // Restart the slideshow
+      setupSlideshow(productId, imageCount);
+    }, 5000); // Longer pause after manual navigation
+  }, [filteredProducts, setupSlideshow]);
+
+  const handleSearchChange = useCallback((e) => {
     setSearchTerm(e.target.value);
-  };
+  }, []);
 
-  const handleFilterChange = (name, value) => {
+  const handleFilterChange = useCallback((name, value) => {
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFilters(prev => ({
@@ -291,9 +297,9 @@ const Homepage = () => {
         [name]: value
       }));
     }
-  };
+  }, []);
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setFilters({
       category: '',
       condition: '',
@@ -302,28 +308,20 @@ const Homepage = () => {
       negotiable: null
     });
     setSearchTerm('');
-  };
+  }, []);
 
-  
-
-  // const closeModal = () => {
-  //   setShowModal(false);
-  //   setSelectedProduct(null);
-  // };
   const closeModal = useCallback(() => {
     setShowModal(false);
     setSelectedProduct(null);
   }, []);
 
-
-  // const handleModalSlideChange = (slideIndex) => {
-  //   if (!selectedProduct) return;
-  //   handleSlideChange(selectedProduct._id, slideIndex);
-  // };
   const handleModalSlideChange = useCallback((slideIndex) => {
     if (!selectedProduct) return;
     handleSlideChange(selectedProduct._id, slideIndex);
   }, [selectedProduct, handleSlideChange]);
+
+  // Memoize the filtered products count for better performance
+  const productCount = useMemo(() => filteredProducts.length, [filteredProducts]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -344,6 +342,8 @@ const Homepage = () => {
             conditions={conditions}
           />
         </div>
+        {/* Show product count for better UX */}
+        <p className="text-gray-600">{productCount} products found</p>
       </div>
       
       {/* Product listing */}
@@ -355,10 +355,9 @@ const Homepage = () => {
         handleSlideChange={handleSlideChange}
       />
       
-      {/* Product Detail Modal */}
+      {/* Product Detail Modal - only render when needed */}
       {showModal && selectedProduct && (
         <ProductModal 
-
           product={selectedProduct}
           onClose={closeModal}
           currentSlide={currentSlides[selectedProduct._id] || 0}
