@@ -70,7 +70,7 @@ const Layout = ({ children }) => {
           <div className="flex items-center space-x-2">
             <span className="text-3xl font-extrabold tracking-tight hover:scale-125 duration-100">
               <Link to="/" className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700  transition-all duration-300">
-                CU - <span className="text-white ">Market</span>
+                Cranes - <span className="text-white ">Market</span>
               </Link>
             </span>
           </div>
@@ -141,7 +141,7 @@ const Layout = ({ children }) => {
       
       <footer className="bg-gray-900 text-gray-400 py-6 text-center text-sm">
         <div className="max-w-7xl mx-auto px-4">
-          © {new Date().getFullYear()} CU - Market. All rights reserved.
+          © {new Date().getFullYear()} Cranes Varsity. All rights reserved.
         </div>
       </footer>
     </div>
